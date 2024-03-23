@@ -1,1 +1,1 @@
-DOA using GFT theorem
+DOA using GSP theorem
