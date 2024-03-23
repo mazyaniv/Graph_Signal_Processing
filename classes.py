@@ -3,10 +3,10 @@ import math
 class prameters_class():
     def __init__(self, M,SNR,K,theta,Res=1,monte=100):
         self.M = M
-        self.teta = theta
-        self.D = len(theta)
         self.SNR = SNR
         self.K = K
+        self.teta = theta
+        self.D = len(theta)
         self.Res = Res
         self.monte = monte
 class Matrix_class():

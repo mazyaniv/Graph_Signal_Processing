@@ -1,6 +1,9 @@
-import numpy as np
 import math
 import scipy.signal as ss
+import numpy as np
+from numpy import linalg as LA
+from matplotlib import pyplot as plt
+from classes import prameters_class, Matrix_class
 
 # def get_key_by_value(dictionary, target_value):
 #     for key, value in dictionary.items():
@@ -50,5 +53,29 @@ def quantize(A, P, thresh_real=0, thresh_im=0):
     mask[:P, :] = (1 / math.sqrt(2)) * (np.sign(A[:P, :].real - (thresh_real)) + (1j * (np.sign(A[:P, :].imag - ((thresh_im))))))
     mask[P:, :] = A[P:, :]
     return mask
+def G_DOA(pram,teta_range,S,q):
+    theta_range = np.arange(teta_range[0], teta_range[1], pram.Res)
+    spectrum_vec = np.zeros((pram.monte,len(theta_range)))
+    for i in range(pram.monte):
+        obs_a = observ(pram.SNR, pram.K, S)
+        x_vec = quantize(obs_a,q)
+        x_vec_s = np.average(x_vec,1)#x_vec.T.flatten()
+        spectrum = np.zeros(len(theta_range))
+        for idx, theta in enumerate(theta_range):
+            my_parameters2 = prameters_class(pram.M, pram.SNR, pram.K, [theta])
+            steering2 = Matrix_class(my_parameters2).steering()
+            A_s = steering2 @ steering2.T.conjugate() - (1 / (pram.M - 1)) * np.eye(pram.M)#Matrix_class(my_parameters2).Adjacency()
+            x_tag_s = GFT(A_s, x_vec_s)
+            spectrum[idx]= 1/LA.norm(np.abs(np.delete(x_tag_s, np.argmax(np.abs(x_tag_s))))/np.max(np.abs(x_tag_s)))
+        spectrum_vec[i,:]=spectrum
+    yaniv = np.average(spectrum_vec,0)
+    plt.plot(theta_range, yaniv,marker="*")
+    plt.show()
+    peaks, _ = ss.find_peaks(spectrum)
+    peaks = list(peaks)
+    peaks.sort(key=lambda x: spectrum[x])
+    pred = np.array(peaks[-pram.D:])
+    pred = np.sort(pred)[::-1]
+    return pred*pram.Res+teta_range[0]
 
 
