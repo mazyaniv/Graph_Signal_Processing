@@ -5,7 +5,7 @@ import scipy.signal as ss
 from classes import prameters_class, Matrix_class
 from functions import observ, GFT, quantize
 
-if __name__ == "__main__": #TODO monte carlo
+if __name__ == "__main__":
     theta = [-15,32]
     my_parameters = prameters_class(20,10,200,theta)
     steering_original = Matrix_class(my_parameters).steering()
