@@ -68,8 +68,8 @@ def G_DOA(pram,teta_range,S,q):
             x_tag_s = GFT(A_s, x_vec_s)
             spectrum[idx]= 1/LA.norm(np.abs(np.delete(x_tag_s, np.argmax(np.abs(x_tag_s))))/np.max(np.abs(x_tag_s)))
         spectrum_vec[i,:]=spectrum
-    yaniv = np.average(spectrum_vec,0)
-    plt.plot(theta_range, yaniv,marker="*")
+    spectrum = np.average(spectrum_vec,0)
+    plt.plot(theta_range, spectrum,marker="*")
     plt.show()
     peaks, _ = ss.find_peaks(spectrum)
     peaks = list(peaks)
