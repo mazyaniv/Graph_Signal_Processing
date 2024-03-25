@@ -4,7 +4,7 @@ from functions import observ, GFT, quantize, G_DOA
 if __name__ == "__main__": #TODO RMSE
     my_parameters = prameters_class(20,0,200,[10,25,40],1,500)
     steering_original = Matrix_class(my_parameters).steering()
-    teta_range = [-60, 60]
+    teta_range = [-60, 59]
     print(G_DOA(my_parameters, teta_range, steering_original,my_parameters.M))
 
 # obs_a = observ(my_parameters.SNR, my_parameters.K, steering_original)
