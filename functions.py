@@ -62,18 +62,18 @@ def quantize(A, P, thresh_real=0, thresh_im=0):
 def G_DOA(pram,teta_range,S,q):
     theta_range = np.arange(teta_range[0], teta_range[1], pram.Res)
     A_s_mat = np.zeros((pram.M, pram.M,len(theta_range)), dtype=complex)
-    for theta in theta_range:
-        my_parameters2 = prameters_class(pram.M, pram.SNR, pram.K, [theta])
+    for j in range(len(theta_range)):
+        my_parameters2 = prameters_class(pram.M, pram.SNR, pram.K, [theta_range[j]])
         steering2 = Matrix_class(my_parameters2).steering()
         A_s = steering2 @ steering2.T.conjugate() - (1 / (pram.M - 1)) * np.eye(pram.M)  # Matrix_class(my_parameters2).Adjacency()
-        A_s_mat[:,:,theta] = A_s
+        A_s_mat[:,:,j] = A_s
     spectrum_vec = np.zeros((pram.K,len(theta_range)))
     obs_a = observ(pram.SNR, pram.K, S)
     x_vec = quantize(obs_a, q)
     for i in range(pram.K):
         spectrum = np.zeros(len(theta_range))
         for idx, theta in enumerate(theta_range):
-            x_tag_s = GFT(A_s_mat[:,:,theta], x_vec[:,i])
+            x_tag_s = GFT(A_s_mat[:,:,idx], x_vec[:,i])
             sorted_indices = np.argsort(x_tag_s)[::-1]
             # spectrum[idx]= 1/LA.norm(np.abs(x_tag_s[:-pram.D])/np.max(np.abs(x_tag_s)))
             spectrum[idx]= 1/LA.norm(np.abs(np.delete(x_tag_s, sorted_indices[:1]))/np.max(np.abs(x_tag_s)))
