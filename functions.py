@@ -44,8 +44,14 @@ def observ(SNR, K, A): #k=snapshots
 
 def GFT(S, x):
     eigenvalues, eigenvectors = np.linalg.eig(S)
-    sorted_eigenvectors = eigenvectors[:, np.argsort(np.abs(eigenvalues))] #sorted in case of negative eigenvalues
+    sorted_eigenvectors = eigenvectors[:, np.argsort(np.real(eigenvalues))] #sorted in case of negative eigenvalues
+    # print(np.imag(eigenvalues))
+    # print(np.argsort(np.abs(eigenvalues)))
     x_tag = sorted_eigenvectors.T.conjugate()@x
+    vector = np.zeros(len(x_tag), dtype=int)
+    vector[:] = 1
+    B = np.diag(vector)
+    x_tag = B@x_tag
     return x_tag
 
 def quantize(A, P, thresh_real=0, thresh_im=0):
@@ -55,23 +61,27 @@ def quantize(A, P, thresh_real=0, thresh_im=0):
     return mask
 def G_DOA(pram,teta_range,S,q):
     theta_range = np.arange(teta_range[0], teta_range[1], pram.Res)
-    spectrum_vec = np.zeros((pram.monte,len(theta_range)))
-    for i in range(pram.monte):
-        obs_a = observ(pram.SNR, pram.K, S)
-        x_vec = quantize(obs_a,q)
-        x_vec_s = np.average(x_vec,1)#x_vec.T.flatten()
+    A_s_mat = np.zeros((pram.M, pram.M,len(theta_range)), dtype=complex)
+    for theta in theta_range:
+        my_parameters2 = prameters_class(pram.M, pram.SNR, pram.K, [theta])
+        steering2 = Matrix_class(my_parameters2).steering()
+        A_s = steering2 @ steering2.T.conjugate() - (1 / (pram.M - 1)) * np.eye(pram.M)  # Matrix_class(my_parameters2).Adjacency()
+        A_s_mat[:,:,theta] = A_s
+    spectrum_vec = np.zeros((pram.K,len(theta_range)))
+    obs_a = observ(pram.SNR, pram.K, S)
+    x_vec = quantize(obs_a, q)
+    for i in range(pram.K):
         spectrum = np.zeros(len(theta_range))
         for idx, theta in enumerate(theta_range):
-            my_parameters2 = prameters_class(pram.M, pram.SNR, pram.K, [theta])
-            steering2 = Matrix_class(my_parameters2).steering()
-            A_s = steering2 @ steering2.T.conjugate() - (1 / (pram.M - 1)) * np.eye(pram.M)#Matrix_class(my_parameters2).Adjacency()
-            x_tag_s = GFT(A_s, x_vec_s)
-            spectrum[idx]= 1/LA.norm(np.abs(np.delete(x_tag_s, np.argmax(np.abs(x_tag_s))))/np.max(np.abs(x_tag_s)))
+            x_tag_s = GFT(A_s_mat[:,:,theta], x_vec[:,i])
+            sorted_indices = np.argsort(x_tag_s)[::-1]
+            # spectrum[idx]= 1/LA.norm(np.abs(x_tag_s[:-pram.D])/np.max(np.abs(x_tag_s)))
+            spectrum[idx]= 1/LA.norm(np.abs(np.delete(x_tag_s, sorted_indices[:1]))/np.max(np.abs(x_tag_s)))
         spectrum_vec[i,:]=spectrum
     spectrum = np.average(spectrum_vec,0)
     plt.plot(theta_range, spectrum,marker="*")
     plt.show()
-    peaks, _ = ss.find_peaks(spectrum)
+    peaks, _ = ss.find_peaks(spectrum,distance=pram.delta/pram.Res)
     peaks = list(peaks)
     peaks.sort(key=lambda x: spectrum[x])
     pred = np.array(peaks[-pram.D:])

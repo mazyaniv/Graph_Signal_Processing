@@ -1,14 +1,14 @@
 import numpy as np
 import math
 class prameters_class():
-    def __init__(self, M,SNR,K,theta,Res=1,monte=100):
+    def __init__(self, M,SNR,K,theta,Res=1,delta=5):
         self.M = M
         self.SNR = SNR
         self.K = K
         self.teta = theta
         self.D = len(theta)
         self.Res = Res
-        self.monte = monte
+        self.delta = delta
 class Matrix_class():
     def __init__(self, pram):
         self.M = pram.M #sensors
