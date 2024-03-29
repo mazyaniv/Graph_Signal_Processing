@@ -9,7 +9,7 @@ if __name__ == "__main__": #TODO RMSE
     steering_original = Matrix_class(my_parameters).steering()
 
     teta_range = [-60, 60]
-    print(G_DOA(my_parameters, teta_range, steering_original,0))
+    print(G_DOA(my_parameters, teta_range, steering_original,my_parameters.M))
 
     # obs_a = observ(my_parameters.SNR, my_parameters.K, steering_original)
     # x_vec = quantize(obs_a, 0)
