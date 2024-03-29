@@ -4,8 +4,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-if __name__ == "__main__": #TODO RMSE
-    my_parameters = prameters_class(20,0,100,[-15,50],0.1)
+if __name__ == "__main__": #TODO RMSE (monte)
+    my_parameters = prameters_class(20,0,100,[-15,50],0.5)
     steering_original = Matrix_class(my_parameters).steering()
 
     teta_range = [-60, 60]
