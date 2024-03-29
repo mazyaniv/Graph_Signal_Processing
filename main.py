@@ -1,15 +1,15 @@
 from classes import prameters_class, Matrix_class
-from functions import observ, GFT, quantize, G_DOA
+from functions import observ, GFT, quantize, G_DOA,angles_generate
 import numpy as np
 from matplotlib import pyplot as plt
 
 
 if __name__ == "__main__": #TODO RMSE (monte)
-    my_parameters = prameters_class(20,0,100,[-15,50],0.5)
-    steering_original = Matrix_class(my_parameters).steering()
-
-    teta_range = [-60, 60]
-    print(G_DOA(my_parameters, teta_range, steering_original,my_parameters.M))
+    my_parameters = prameters_class(M=20,SNR=0,K=100,teta_range=[-60, 60],D=2,monte=1,Res=0.5)
+    angles = angles_generate(my_parameters)
+    print(angles[::-1])
+    steering_original = Matrix_class(my_parameters).steering(angles)
+    print(G_DOA(my_parameters, steering_original,my_parameters.M))
 
     # obs_a = observ(my_parameters.SNR, my_parameters.K, steering_original)
     # x_vec = quantize(obs_a, 0)

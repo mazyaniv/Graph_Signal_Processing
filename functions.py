@@ -17,6 +17,14 @@ from classes import prameters_class, Matrix_class
 #         if abs(teta[0] - teta[1]) > pram.delta:
 #             break
 #     return np.sort(teta)[::-1]
+
+def angles_generate(pram):
+    while True:
+        range_array = np.arange(pram.teta_range[0], pram.teta_range[1], pram.Res)
+        teta = np.random.choice(range_array[1:-1], size=pram.D, replace=False)
+        if abs(teta[0] - teta[1]) > pram.delta:
+            break
+    return np.sort(teta)#[::-1]
 def generate_qpsk_symbols(K,D):
     random_symbols = np.random.randint(0, 4, (K,D))
     qpsk_constellation = np.array([1+1j, -1+1j, -1-1j, 1-1j]) / np.sqrt(2)
@@ -59,12 +67,11 @@ def quantize(A, P, thresh_real=0, thresh_im=0):
     mask[:P, :] = (1 / math.sqrt(2)) * (np.sign(A[:P, :].real - (thresh_real)) + (1j * (np.sign(A[:P, :].imag - ((thresh_im))))))
     mask[P:, :] = A[P:, :]
     return mask
-def G_DOA(pram,teta_range,S,q):
-    theta_range = np.arange(teta_range[0], teta_range[1], pram.Res)
+def G_DOA(pram,S,q):
+    theta_range = np.arange(pram.teta_range[0], pram.teta_range[1], pram.Res)
     A_s_mat = np.zeros((pram.M, pram.M,len(theta_range)), dtype=complex)
     for j in range(len(theta_range)):
-        my_parameters2 = prameters_class(pram.M, pram.SNR, pram.K, [theta_range[j]])
-        steering2 = Matrix_class(my_parameters2).steering()
+        steering2 = np.exp(-1j * np.pi * np.arange(pram.M) * np.sin(np.radians(theta_range[j]))).reshape(pram.M,1)#Matrix_class(my_parameters2).steering(theta_range[j])
         A_s = steering2 @ steering2.T.conjugate() - (1 / (pram.M - 1)) * np.eye(pram.M)  # Matrix_class(my_parameters2).Adjacency()
         A_s_mat[:,:,j] = A_s
     spectrum_vec = np.zeros((pram.K,len(theta_range)))
@@ -86,6 +93,6 @@ def G_DOA(pram,teta_range,S,q):
     peaks.sort(key=lambda x: spectrum[x])
     pred = np.array(peaks[-pram.D:])
     pred = np.sort(pred)[::-1]
-    return pred*pram.Res+teta_range[0]
+    return pred*pram.Res+pram.teta_range[0]
 
 

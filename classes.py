@@ -1,26 +1,26 @@
 import numpy as np
 import math
 class prameters_class():
-    def __init__(self, M,SNR,K,theta,Res=1,delta=5):
+    def __init__(self, M,SNR,K,teta_range,D,monte=100,Res=1,delta=5):
         self.M = M
         self.SNR = SNR
         self.K = K
-        self.teta = theta
-        self.D = len(theta)
+        self.teta_range = teta_range
+        self.monte = monte
+        self.D = D
         self.Res = Res
         self.delta = delta
 class Matrix_class():
     def __init__(self, pram):
         self.M = pram.M #sensors
         self.K = pram.K #snapshots
-        self.teta = pram.teta
-        self.D = len(pram.teta) #sources
+        self.D = pram.D #sources
         self.Stee = np.zeros((self.M, self.D), dtype=complex) #steering matrix
         self.matrix = np.zeros((self.M*self.K, self.M*self.K), dtype=complex)
-    def steering(self):
+    def steering(self,teta):
         A_mask = np.zeros((self.M, self.D), dtype=complex)
         for j in range(self.D):
-            A_mask[:, j] = np.exp(-1j * np.pi * np.arange(self.M) * np.sin(np.radians(self.teta[j])))
+            A_mask[:, j] = np.exp(-1j * np.pi * np.arange(self.M) * np.sin(np.radians(teta[j])))
         self.Stee = A_mask
         return self.Stee
     def Adjacency(self):
