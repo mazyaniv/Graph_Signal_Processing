@@ -24,7 +24,7 @@ def angles_generate(pram):
         teta = np.random.choice(range_array[1:-1], size=pram.D, replace=False)
         if abs(teta[0] - teta[1]) > pram.delta:
             break
-    return np.sort(teta)#[::-1]
+    return np.sort(teta)[::-1]
 def generate_qpsk_symbols(K,D):
     random_symbols = np.random.randint(0, 4, (K,D))
     qpsk_constellation = np.array([1+1j, -1+1j, -1-1j, 1-1j]) / np.sqrt(2)
@@ -67,32 +67,45 @@ def quantize(A, P, thresh_real=0, thresh_im=0):
     mask[:P, :] = (1 / math.sqrt(2)) * (np.sign(A[:P, :].real - (thresh_real)) + (1j * (np.sign(A[:P, :].imag - ((thresh_im))))))
     mask[P:, :] = A[P:, :]
     return mask
-def G_DOA(pram,S,q):
-    theta_range = np.arange(pram.teta_range[0], pram.teta_range[1], pram.Res)
-    A_s_mat = np.zeros((pram.M, pram.M,len(theta_range)), dtype=complex)
-    for j in range(len(theta_range)):
-        steering2 = np.exp(-1j * np.pi * np.arange(pram.M) * np.sin(np.radians(theta_range[j]))).reshape(pram.M,1)#Matrix_class(my_parameters2).steering(theta_range[j])
-        A_s = steering2 @ steering2.T.conjugate() - (1 / (pram.M - 1)) * np.eye(pram.M)  # Matrix_class(my_parameters2).Adjacency()
-        A_s_mat[:,:,j] = A_s
-    spectrum_vec = np.zeros((pram.K,len(theta_range)))
-    obs_a = observ(pram.SNR, pram.K, S)
-    x_vec = quantize(obs_a, q)
-    for i in range(pram.K):
-        spectrum = np.zeros(len(theta_range))
-        for idx, theta in enumerate(theta_range):
-            x_tag_s = GFT(A_s_mat[:,:,idx], x_vec[:,i])
-            sorted_indices = np.argsort(x_tag_s)[::-1]
-            # spectrum[idx]= 1/LA.norm(np.abs(x_tag_s[:-pram.D])/np.max(np.abs(x_tag_s)))
-            spectrum[idx]= 1/LA.norm(np.abs(np.delete(x_tag_s, sorted_indices[:1]))/np.max(np.abs(x_tag_s)))
-        spectrum_vec[i,:]=spectrum
-    spectrum = np.average(spectrum_vec,0)
-    plt.plot(theta_range, spectrum,marker="*")
-    plt.show()
-    peaks, _ = ss.find_peaks(spectrum,distance=pram.delta/pram.Res)
-    peaks = list(peaks)
-    peaks.sort(key=lambda x: spectrum[x])
-    pred = np.array(peaks[-pram.D:])
-    pred = np.sort(pred)[::-1]
-    return pred*pram.Res+pram.teta_range[0]
+def G_DOA(pram,q):
+    labels = np.zeros((pram.monte, pram.D))
+    theta_vector = np.zeros((pram.monte, pram.D))
+    ind = 0
+    for l in range(pram.monte):
+        teta = angles_generate(pram)
+        labels[l, :] = teta
+        S = Matrix_class(pram).steering(teta)
+        theta_range = np.arange(pram.teta_range[0], pram.teta_range[1], pram.Res)
+        A_s_mat = np.zeros((pram.M, pram.M,len(theta_range)), dtype=complex)
+        for j in range(len(theta_range)):
+            steering2 = np.exp(-1j * np.pi * np.arange(pram.M) * np.sin(np.radians(theta_range[j]))).reshape(pram.M,1)#Matrix_class(my_parameters2).steering(theta_range[j])
+            A_s = steering2 @ steering2.T.conjugate() - (1 / (pram.M - 1)) * np.eye(pram.M)  # Matrix_class(my_parameters2).Adjacency()
+            A_s_mat[:,:,j] = A_s
+        spectrum_vec = np.zeros((pram.K,len(theta_range)))
+        obs_a = observ(pram.SNR, pram.K, S)
+        x_vec = quantize(obs_a, q)
+        for i in range(pram.K):
+            spectrum = np.zeros(len(theta_range))
+            for idx, theta in enumerate(theta_range): #TODO reduce oomplexity
+                x_tag_s = GFT(A_s_mat[:,:,idx], x_vec[:,i])
+                sorted_indices = np.argsort(x_tag_s)[::-1]
+                # spectrum[idx]= 1/LA.norm(np.abs(x_tag_s[:-pram.D])/np.max(np.abs(x_tag_s)))
+                spectrum[idx]= 1/LA.norm(np.abs(np.delete(x_tag_s, sorted_indices[:1]))/np.max(np.abs(x_tag_s)))
+            spectrum_vec[i,:]=spectrum
+        spectrum = np.average(spectrum_vec,0)
+        # plt.plot(theta_range, spectrum,marker="*")
+        # plt.show()
+        peaks, _ = ss.find_peaks(spectrum,distance=pram.delta/pram.Res)
+        peaks = list(peaks)
+        peaks.sort(key=lambda x: spectrum[x])
+        pred = np.array(peaks[-pram.D:])
+        pred = np.sort(pred)[::-1]
+        theta_vector[l,:] = pred*pram.Res+pram.teta_range[0]
+        print(ind)
+        ind += 1
+    sub_vec = theta_vector - labels
+    RMSE = ((np.sum(np.sum(np.power(sub_vec, 2), 1)) / (sub_vec.shape[0] * (theta_vector.shape[1]))) ** 0.5)
+    return RMSE
+
 
 
