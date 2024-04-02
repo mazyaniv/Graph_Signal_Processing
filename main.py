@@ -11,7 +11,7 @@ if __name__ == "__main__": #TODO RMSE (monte)
     teta_range = [-60, 60]
     # SNR = 0
     SNR_space = np.linspace(-5, 5, 5)
-    snap = 50
+    snap = 100
     # snap_space = np.linspace(100, 1000, 10, dtype=int)
     monte = 10
     delta = 5 #Minimal gap between two determenistic angles
@@ -32,7 +32,7 @@ if __name__ == "__main__": #TODO RMSE (monte)
                  label=f'N_a={N_a[i]},N_q={N_q[i]}')
     plt.grid()
     plt.title(f"RMSE for $\Delta$={my_parameters.delta}, Monte={my_parameters.monte}, Res={my_parameters.Res}, "
-              f"snap={my_parameters.K}")  # TODO
+              f"Snap={my_parameters.K}")  # TODO
     plt.ylabel("RMSE")
     plt.xlabel(r"$SNR_{dB}$")
     plt.legend(loc='upper right', fontsize='small')
