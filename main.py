@@ -11,9 +11,9 @@ if __name__ == "__main__": #TODO RMSE (monte)
     teta_range = [-60, 60]
     # SNR = 0
     SNR_space = np.linspace(-5, 5, 5)
-    snap = 10
+    snap = 50
     # snap_space = np.linspace(100, 1000, 10, dtype=int)
-    monte = 50
+    monte = 10
     delta = 5 #Minimal gap between two determenistic angles
     Res = 1
     # delta_space = np.linspace(0.8, 6, 20)
@@ -24,7 +24,6 @@ if __name__ == "__main__": #TODO RMSE (monte)
             my_parameters = prameters_class(M=N_a[j] + N_q[j],N_q=N_q[j], SNR=SNR_space[i], K=snap, D=D,teta_range=teta_range, monte=monte,
                                             delta=delta,Res=Res)
             Error1[i, j] = G_DOA(my_parameters)
-            print("hi")
     np.save("Error1.npy", Error1)
     fig = plt.figure(figsize=(12, 8))
     colors = ['red', 'b', 'black']
