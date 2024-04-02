@@ -1,5 +1,5 @@
 from classes import prameters_class, Matrix_class
-from functions import observ, GFT, quantize, G_DOA,angles_generate
+from functions import observ, GFT, quantize, G_DOA,angles_generate,G_DOA2
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -9,5 +9,5 @@ if __name__ == "__main__": #TODO RMSE (monte)
     # angles = angles_generate(my_parameters)
     # print(angles)
     # S = Matrix_class(my_parameters).steering(angles)
-    print(G_DOA(my_parameters,0))
+    print(G_DOA(my_parameters,my_parameters.M))
 
