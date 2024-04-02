@@ -67,7 +67,7 @@ def quantize(A, P, thresh_real=0, thresh_im=0):
     mask[:P, :] = (1 / math.sqrt(2)) * (np.sign(A[:P, :].real - (thresh_real)) + (1j * (np.sign(A[:P, :].imag - ((thresh_im))))))
     mask[P:, :] = A[P:, :]
     return mask
-def G_DOA(pram,q):
+def G_DOA(pram):
     labels = np.zeros((pram.monte, pram.D))
     theta_vector = np.zeros((pram.monte, pram.D))
     ind = 0
@@ -83,7 +83,7 @@ def G_DOA(pram,q):
             A_s_mat[:,:,j] = A_s
         spectrum_vec = np.zeros((pram.K,len(theta_range)))
         obs_a = observ(pram.SNR, pram.K, S)
-        x_vec = quantize(obs_a, q)
+        x_vec = quantize(obs_a, pram.N_q)
         for i in range(pram.K):
             spectrum = np.zeros(len(theta_range))
             for idx, theta in enumerate(theta_range):
