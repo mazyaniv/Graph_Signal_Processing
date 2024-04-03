@@ -22,7 +22,9 @@ def angles_generate(pram):
     while True:
         range_array = np.arange(pram.teta_range[0], pram.teta_range[1], pram.Res)
         teta = np.random.choice(range_array[1:-1], size=pram.D, replace=False)
-        if abs(teta[0] - teta[1]) > pram.delta:
+        if pram.D >1 and abs(teta[0] - teta[1]) > pram.delta:
+            break
+        elif pram.D == 1:
             break
     return np.sort(teta)[::-1]
 def generate_qpsk_symbols(K,D):
