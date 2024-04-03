@@ -5,13 +5,13 @@ from matplotlib import pyplot as plt
 
 
 if __name__ == "__main__": #TODO RMSE (monte)
-    N_a = [20, 2, 0]
-    N_q = [0, 18, 20]
+    N_a = [1]#[20, 2, 0]
+    N_q = [1]#[0, 18, 20]
     D = 2
     teta_range = [-60, 60]
     # SNR = 0
     SNR_space = np.linspace(-5, 5, 5)
-    snap = 100
+    snap = 1
     # snap_space = np.linspace(100, 1000, 10, dtype=int)
     monte = 1
     delta = 5 #Minimal gap between two determenistic angles
@@ -25,7 +25,7 @@ if __name__ == "__main__": #TODO RMSE (monte)
                                             delta=delta,Res=Res)
             Error1[i, j] = G_DOA(my_parameters)
     # print(Error1)
-    np.save("Error1.npy", Error1)
+    np.save(f"RMSE for delta={my_parameters.delta}, Monte={my_parameters.monte}, Res={my_parameters.Res},Snap={my_parameters.K}.npy", Error1)
     fig = plt.figure(figsize=(12, 8))
     colors = ['red', 'b', 'black']
     for i in range(len(N_q)):  # TODO
