@@ -5,17 +5,17 @@ from matplotlib import pyplot as plt
 
 
 if __name__ == "__main__": #TODO RMSE (monte)
-    N_a = [1]#[20, 2, 0]
-    N_q = [1]#[0, 18, 20]
+    N_a = [20, 2, 0]
+    N_q = [0, 18, 20]
     D = 2
     teta_range = [-60, 60]
     # SNR = 0
     SNR_space = np.linspace(-5, 5, 5)
-    snap = 1
+    snap = 100
     # snap_space = np.linspace(100, 1000, 10, dtype=int)
-    monte = 1
+    monte = 100
     delta = 5 #Minimal gap between two determenistic angles
-    Res = 1
+    Res = 0.5
     # delta_space = np.linspace(0.8, 6, 20)
     relevant_space = SNR_space  # TODO
     Error1 = np.zeros((len(relevant_space), len(N_q)))
