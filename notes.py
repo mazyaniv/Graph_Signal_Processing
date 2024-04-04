@@ -1,21 +1,6 @@
 import numpy as np
 
-# Define matrix A and parameters
-N = 3  # Size of each block
-K = 2  # Number of blocks horizontally
 
-# Example matrix A
-A = np.array([[1, 2, 3],
-              [4, 5, 6],
-              [7, 8, 9]])
-
-# Create a matrix B of size K*N x N
-B = np.kron(np.ones(K), A)
-
-print("Matrix B:")
-print(B.T)
-print("Shape of A:", A.shape)
-print("Shape of B:", B.shape)
 
 
 # obs_a = observ(my_parameters.SNR, my_parameters.K, steering_original)

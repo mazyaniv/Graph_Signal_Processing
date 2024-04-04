@@ -75,6 +75,7 @@ def G_DOA(pram):
     ind = 0
     for l in range(pram.monte):
         teta = angles_generate(pram)
+        print(teta)
         labels[l, :] = teta
         S = Matrix_class(pram).steering(teta)
         theta_range = np.arange(pram.teta_range[0], pram.teta_range[1], pram.Res)
@@ -93,11 +94,11 @@ def G_DOA(pram):
                 A_s = steering2 @ steering2.T.conjugate() - (1 / (pram.M - 1)) * np.eye(pram.M)  # Matrix_class(my_parameters2).Adjacency()
                 x_tag_s = GFT(A_s, x_vec[:,i]) #GFT(A_s_mat[:,:,idx], x_vec[:,i])
                 sorted_indices = np.argsort(x_tag_s)[::-1]
-                spectrum[idx]= 1/LA.norm(np.abs(np.delete(x_tag_s, sorted_indices[:1]))/np.max(np.abs(x_tag_s)))
+                spectrum[idx]= 1/LA.norm(np.abs(np.delete(x_tag_s, sorted_indices[:1]))/np.max(np.abs(x_tag_s))) #TODO
             spectrum_vec[i,:]=spectrum
         spectrum = np.average(spectrum_vec,0)
-        # plt.plot(theta_range, spectrum,marker="*")
-        # plt.show()
+        plt.plot(theta_range, spectrum,marker="*")
+        plt.show()
         peaks, _ = ss.find_peaks(spectrum,distance=pram.delta/pram.Res)
         peaks = list(peaks)
         peaks.sort(key=lambda x: spectrum[x])
