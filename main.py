@@ -35,7 +35,7 @@ if __name__ == "__main__":
     teta_range = [-60, 60]
     # SNR = 0
     SNR_space = np.linspace(-5, 5, 5)
-    snap = 200
+    snap = 1000
     # snap_space = np.linspace(100, 1000, 10, dtype=int)
     monte = 100
     delta = 5 #Minimal gap between two determenistic angles
