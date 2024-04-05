@@ -35,16 +35,18 @@ def generate_qpsk_symbols(K,D):
 def observ(SNR, K, A): #k=snapshots
     N = A.shape[0]
     D = A.shape[1]
-    # sample_rate = 1e6
-    # t = np.arange(K) / sample_rate  # time vector
-    # f_tone = np.array([0.02e3,0.08e3])
-    # s = np.exp(2j * np.pi * f_tone.reshape(2,1) * t.reshape(1,800))
+    sample_rate = 1e6
+    t = np.arange(K) / sample_rate  # time vector
+    f_tone = np.array([0.02e3,0.08e3]) #same size as D
+    s = np.exp(2j * np.pi * f_tone.reshape(D,1) * t.reshape(1,K))
+    
     # real_s = np.random.normal(1, 1 / math.sqrt(2), (D, K))
     # im_s = np.random.normal(1, 1 / math.sqrt(2), (D, K))
     # s = real_s + 1j * im_s
-    s = generate_qpsk_symbols(K,D)
-    s_samp = s.reshape(D, K)
+    
+    # s = generate_qpsk_symbols(K,D)
 
+    s_samp = s.reshape(D, K)
     real_n = np.random.normal(0, (10 ** (-SNR / 20)) / math.sqrt(2), (N, K))
     im_n = np.random.normal(0, (10 ** (-SNR / 20)) / math.sqrt(2), (N, K))
     n = real_n + 1j * im_n
@@ -75,30 +77,22 @@ def G_DOA(pram):
     ind = 0
     for l in range(pram.monte):
         teta = angles_generate(pram)
-        print(teta)
+        # print(teta)
         labels[l, :] = teta
         S = Matrix_class(pram).steering(teta)
         theta_range = np.arange(pram.teta_range[0], pram.teta_range[1], pram.Res)
-        A_s_mat = np.zeros((pram.M, pram.M,len(theta_range)), dtype=complex)
-        for j in range(len(theta_range)):
-            steering2 = np.exp(-1j * np.pi * np.arange(pram.M) * np.sin(np.radians(theta_range[j]))).reshape(pram.M,1)#Matrix_class(my_parameters2).steering(theta_range[j])
-            A_s = steering2 @ steering2.T.conjugate() - (1 / (pram.M - 1)) * np.eye(pram.M)  # Matrix_class(my_parameters2).Adjacency()
-            A_s_mat[:,:,j] = A_s
-        spectrum_vec = np.zeros((pram.K,len(theta_range)))
         obs_a = observ(pram.SNR, pram.K, S)
         x_vec = quantize(obs_a, pram.N_q)
-        for i in range(pram.K):
-            spectrum = np.zeros(len(theta_range))
-            for idx, theta in enumerate(theta_range):
-                steering2 = np.exp(-1j * np.pi * np.arange(pram.M) * np.sin(np.radians(theta_range[idx]))).reshape(pram.M,1) #Matrix_class(my_parameters2).steering(theta_range[j])
-                A_s = steering2 @ steering2.T.conjugate() - (1 / (pram.M - 1)) * np.eye(pram.M)  # Matrix_class(my_parameters2).Adjacency()
-                x_tag_s = GFT(A_s, x_vec[:,i]) #GFT(A_s_mat[:,:,idx], x_vec[:,i])
-                sorted_indices = np.argsort(x_tag_s)[::-1]
-                spectrum[idx]= 1/LA.norm(np.abs(np.delete(x_tag_s, sorted_indices[:1]))/np.max(np.abs(x_tag_s))) #TODO
-            spectrum_vec[i,:]=spectrum
-        spectrum = np.average(spectrum_vec,0)
-        plt.plot(theta_range, spectrum,marker="*")
-        plt.show()
+        x_vec_s = np.average(x_vec, 1)
+        spectrum = np.zeros((len(theta_range)))
+        for idx, theta in enumerate(theta_range):
+            steering2 = np.exp(-1j * np.pi * np.arange(pram.M) * np.sin(np.radians(theta_range[idx]))).reshape(pram.M,1) #Matrix_class(my_parameters2).steering(theta_range[j])
+            A_s = steering2 @ steering2.T.conjugate() - (1 / (pram.M - 1)) * np.eye(pram.M)  # Matrix_class(my_parameters2).Adjacency()
+            x_tag_s = GFT(A_s, x_vec_s) #GFT(A_s_mat[:,:,idx], x_vec[:,i])
+            sorted_indices = np.argsort(x_tag_s)[::-1]
+            spectrum[idx]= 1/LA.norm(np.abs(np.delete(x_tag_s, sorted_indices[:pram.D]))/np.max(np.abs(x_tag_s))) #TODO
+        # plt.plot(theta_range, spectrum,marker="*")
+        # plt.show()
         peaks, _ = ss.find_peaks(spectrum,distance=pram.delta/pram.Res)
         peaks = list(peaks)
         peaks.sort(key=lambda x: spectrum[x])
