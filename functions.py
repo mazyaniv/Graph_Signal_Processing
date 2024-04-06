@@ -37,7 +37,10 @@ def observ(SNR, K, A): #k=snapshots
     D = A.shape[1]
     sample_rate = 1e6
     t = np.arange(K) / sample_rate  # time vector
-    f_tone = np.array([0.02e3,0.08e3]) #same size as D
+    if D ==1:
+        f_tone = np.array([0.02e3])
+    else:
+        f_tone = np.array([0.02e3,0.08e3]) #same size as D
     s = np.exp(2j * np.pi * f_tone.reshape(D,1) * t.reshape(1,K))
     
     # real_s = np.random.normal(1, 1 / math.sqrt(2), (D, K))
@@ -57,8 +60,6 @@ def observ(SNR, K, A): #k=snapshots
 def GFT(S, x):
     eigenvalues, eigenvectors = np.linalg.eig(S)
     sorted_eigenvectors = eigenvectors[:, np.argsort(np.real(eigenvalues))] #sorted in case of negative eigenvalues
-    # print(np.imag(eigenvalues))
-    # print(np.argsort(np.abs(eigenvalues)))
     x_tag = sorted_eigenvectors.T.conjugate()@x
     vector = np.zeros(len(x_tag), dtype=int)
     vector[:] = 1
@@ -74,7 +75,7 @@ def quantize(A, P, thresh_real=0, thresh_im=0):
 def G_DOA(pram):
     labels = np.zeros((pram.monte, pram.D))
     theta_vector = np.zeros((pram.monte, pram.D))
-    ind = 0
+    # ind = 0
     for l in range(pram.monte):
         teta = angles_generate(pram)
         # print(teta)
@@ -91,7 +92,10 @@ def G_DOA(pram):
             x_tag_s = GFT(A_s, x_vec_s) #GFT(A_s_mat[:,:,idx], x_vec[:,i])
             sorted_indices = np.argsort(x_tag_s)[::-1]
             spectrum[idx]= 1/LA.norm(np.abs(np.delete(x_tag_s, sorted_indices[:pram.D]))/np.max(np.abs(x_tag_s))) #TODO
-        # plt.plot(theta_range, spectrum,marker="*")
+        # plt.title("Piquancy function for {D} source/s".format(D=pram.D))
+        # plt.ylabel(r"$\xi(\theta)$")
+        # plt.xlabel(r"$\theta^\degree$")
+        # plt.plot(theta_range, spectrum)#,marker=".")
         # plt.show()
         peaks, _ = ss.find_peaks(spectrum,distance=pram.delta/pram.Res)
         peaks = list(peaks)
@@ -100,7 +104,7 @@ def G_DOA(pram):
         pred = np.sort(pred)[::-1]
         theta_vector[l,:] = pred*pram.Res+pram.teta_range[0]
         # print(ind)
-        ind += 1
+        # ind += 1
     # print(labels)
     # print(theta_vector)
     sub_vec = theta_vector - labels
@@ -146,7 +150,7 @@ def G_DOA2(pram,q): #TODO reduce complexity and sace performance
         # print(ind)
         ind += 1
     # print(labels)
-    # print(theta_vector)
+    print(theta_vector)
     sub_vec = theta_vector - labels
     RMSE = ((np.sum(np.sum(np.power(sub_vec, 2), 1)) / (sub_vec.shape[0] * (theta_vector.shape[1]))) ** 0.5)
     return RMSE
