@@ -38,13 +38,13 @@ if __name__ == "__main__":
 ###############################################################
     N_a = [0]
     N_q = [20]
-    D = 2
+    D = 1
     teta_range = [-60, 60]
     # SNR = 0
-    SNR_space = np.linspace(0, 20, 16)
-    snap = 500
+    SNR_space = np.linspace(-10, 10, 16)
+    snap = 300
     # snap_space = np.linspace(100, 1000, 10, dtype=int)
-    monte = 1000
+    monte = 100
     delta = 5 #Minimal gap between two determenijjstic angles
     Res = 1
     # delta_space = np.linspace(0.8, 6, 20)
