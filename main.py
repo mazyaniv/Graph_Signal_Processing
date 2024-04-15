@@ -1,13 +1,13 @@
 from classes import prameters_class, Matrix_class
-from functions import observ, GFT, quantize, G_DOA,angles_generate,G_DOA2
+from functions import observ, GFT, quantize, G_DOA,angles_generate,G_DOA2, general
 import numpy as np
 from matplotlib import pyplot as plt
 
 
 if __name__ == "__main__":
-    # my_parameters = prameters_class(M=20, N_q=0, SNR=0, K=150, D=2, teta_range=[-60, 60],monte=1,delta=5,Res=0.5)
+    # my_parameters = prameters_class(M=20, N_q=0, SNR=0, K=300, D=2, teta_range=[-60, 60],monte=1,delta=5,Res=0.5)
     # print(G_DOA(my_parameters))
-    # theta = [-20,34]
+    # theta = [-20,35]
     # steering_original = Matrix_class(my_parameters).steering(theta)
     # obs_a = observ(my_parameters.SNR, my_parameters.K, steering_original)
     # x_vec = quantize(obs_a, 0)
@@ -36,38 +36,45 @@ if __name__ == "__main__":
     # plt.legend()
     # plt.show()
 ###############################################################
-    N_a = [20]#, 2, 0]
-    N_q = [0]#, 18, 20]
-    D = 1
+    N_a = [0]
+    N_q = [20]
+    D = 2
     teta_range = [-60, 60]
     # SNR = 0
-    SNR_space = np.linspace(-10, 10, 5)
-    snap = 150
+    SNR_space = np.linspace(0, 20, 16)
+    snap = 500
     # snap_space = np.linspace(100, 1000, 10, dtype=int)
-    monte = 200
-    delta = 5 #Minimal gap between two determenistic angles
-    Res = 0.5
+    monte = 1000
+    delta = 5 #Minimal gap between two determenijjstic angles
+    Res = 1
     # delta_space = np.linspace(0.8, 6, 20)
     relevant_space = SNR_space  # TODO
     Error1 = np.zeros((len(relevant_space), len(N_q)))
+    Error2 = np.zeros((len(relevant_space), len(N_q)))
     for i in range(len(relevant_space)):
         for j in range(len(N_q)):
             my_parameters = prameters_class(M=N_a[j] + N_q[j],N_q=N_q[j], SNR=SNR_space[i], K=snap, D=D,teta_range=teta_range, monte=monte,
                                             delta=delta,Res=Res)
             Error1[i, j] = G_DOA(my_parameters)
-    # print("RMSE=",Error1)
+            Error2[i, j] = general(my_parameters)
+    # print("RMSE=",Error2)
     # np.save(f"RMSE for delta={my_parameters.delta}, Monte={my_parameters.monte}, Res={my_parameters.Res},Snap={my_parameters.K}.npy", Error1)
     fig = plt.figure(figsize=(12, 8))
-    colors = ['red', 'b', 'black']
+    colors = ['black','blue', 'red']
     for i in range(len(N_q)):  # TODO
         plt.plot(relevant_space, Error1[:, i], linestyle='solid', marker=".", color=colors[i],
-                 label=f'N_a={N_a[i]},N_q={N_q[i]}')
-    plt.grid()
+                 label=f'N_a={N_a[i]},N_q={N_q[i]},GSP')
+        plt.plot(relevant_space, Error2[:, i], linestyle='dashed', marker="x", color=colors[i],
+                 label=f'N_a={N_a[i]},N_q={N_q[i]},MUSIC')
+    ax = plt.gca()
+    ax.set_xticks(np.arange(SNR_space[0], SNR_space[-1], 0.5), minor=True)
+    ax.grid(which='major', alpha=0.5)
+    ax.grid(which='minor', linestyle="--", alpha=0.25)
     plt.title(f"RMSE for $\Delta$={my_parameters.delta}, Monte={my_parameters.monte}, Res={my_parameters.Res}, "
               f"Snap={my_parameters.K}")  # TODO
     plt.ylabel("RMSE")
     plt.xlabel(r"$SNR_{dB}$")
-    plt.legend(loc='upper right', fontsize='small')
+    plt.legend(loc='upper right', fontsize='small', ncol=2)
     plt.show()
 
 

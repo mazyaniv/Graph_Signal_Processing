@@ -1,9 +1,10 @@
 import math
-import scipy.signal as ss
 import numpy as np
 from numpy import linalg as LA
 from matplotlib import pyplot as plt
 from classes import prameters_class, Matrix_class
+from methods import root_music, music, esprit
+import scipy.signal as ss
 
 # def get_key_by_value(dictionary, target_value):
 #     for key, value in dictionary.items():
@@ -35,16 +36,17 @@ def generate_qpsk_symbols(K,D):
 def observ(SNR, K, A): #k=snapshots
     N = A.shape[0]
     D = A.shape[1]
-    sample_rate = 1e6
+    
+    sample_rate = 1e6 #TODO
     t = np.arange(K) / sample_rate  # time vector
     if D ==1:
-        f_tone = np.array([0.02e3])
+        f_tone = np.array([700])
     else:
-        f_tone = np.array([0.02e3,0.08e3]) #same size as D
+        f_tone = np.array([50,700]) #same size as D
     s = np.exp(2j * np.pi * f_tone.reshape(D,1) * t.reshape(1,K))
-    
-    # real_s = np.random.normal(1, 1 / math.sqrt(2), (D, K))
-    # im_s = np.random.normal(1, 1 / math.sqrt(2), (D, K))
+
+    # real_s = np.random.normal(0, 1 / math.sqrt(2), (D, K))
+    # im_s = np.random.normal(0, 1 / math.sqrt(2), (D, K))
     # s = real_s + 1j * im_s
     
     # s = generate_qpsk_symbols(K,D)
@@ -72,6 +74,7 @@ def quantize(A, P, thresh_real=0, thresh_im=0):
     mask[:P, :] = (1 / math.sqrt(2)) * (np.sign(A[:P, :].real - (thresh_real)) + (1j * (np.sign(A[:P, :].imag - ((thresh_im))))))
     mask[P:, :] = A[P:, :]
     return mask
+
 def G_DOA(pram):
     labels = np.zeros((pram.monte, pram.D))
     theta_vector = np.zeros((pram.monte, pram.D))
@@ -91,7 +94,7 @@ def G_DOA(pram):
             A_s = steering2 @ steering2.T.conjugate() - (1 / (pram.M - 1)) * np.eye(pram.M)  # Matrix_class(my_parameters2).Adjacency()
             x_tag_s = GFT(A_s, x_vec_s) #GFT(A_s_mat[:,:,idx], x_vec[:,i])
             sorted_indices = np.argsort(x_tag_s)[::-1]
-            spectrum[idx]= 1/LA.norm(np.abs(np.delete(x_tag_s, sorted_indices[:pram.D]))/np.max(np.abs(x_tag_s))) #TODO
+            spectrum[idx]= 1/LA.norm(np.abs(np.delete(x_tag_s, sorted_indices[:1]))/np.max(np.abs(x_tag_s))) #TODO
         # plt.title("Piquancy function for {D} source/s".format(D=pram.D))
         # plt.ylabel(r"$\xi(\theta)$")
         # plt.xlabel(r"$\theta^\degree$")
@@ -110,6 +113,47 @@ def G_DOA(pram):
     sub_vec = theta_vector - labels
     RMSE = ((np.sum(np.sum(np.power(sub_vec, 2), 1)) / (sub_vec.shape[0] * (theta_vector.shape[1]))) ** 0.5)
     return RMSE
+def general(pram):
+    rho = pram.D*(10**(pram.SNR / 10))+1#pram.D * (10 ** (-pram.SNR / 10)+1)
+    labels = np.zeros((pram.monte, pram.D))
+    teta_vector1 = np.zeros((pram.monte, pram.D))
+    teta_vector2 = np.zeros((pram.monte, pram.D))
+    for i in range(pram.monte):
+        while True:
+            teta = angles_generate(pram)
+            labels[i, :] = teta
+            # print(teta)
+            A = Matrix_class(pram).steering(teta)
+            my_vec = observ(pram.SNR, pram.K, A)
+            my_vec = quantize(my_vec, pram.N_q)
+            R = np.cov(my_vec) #covariance(my_vec, my_vec)
+
+            # R1 = np.zeros(R.shape, dtype=complex)
+            # R1[:pram.N_q, :pram.N_q] = rho*((math.pi / 2) *
+            #                            (np.subtract(R[:pram.N_q, :pram.N_q],
+            #                                         (1 - (2 / math.pi)) * np.identity(pram.N_q)))) # R_quantize_lin
+            # R1[pram.N_q:, :pram.N_q] = ((math.pi*rho/2)**0.5)*R[pram.N_q:, :pram.N_q]  # R_mixed
+            # R1[:pram.N_q, pram.N_q:] = ((math.pi*rho/2)**0.5)*R[:pram.N_q, pram.N_q:]  # R_mixed
+            # R1[pram.N_q:, pram.N_q:] = R[pram.N_q:, pram.N_q:]  # R_analog
+            # 
+            # R2 = np.zeros(R.shape, dtype=complex)
+            # R2[:pram.N_q,:pram.N_q] = rho*(np.sin((math.pi / 2) * R[:pram.N_q,:pram.N_q].real)
+            #                                 + 1j * np.sin((math.pi / 2) * R[:pram.N_q,:pram.N_q].imag)) #R_quantize_sin
+            # R2[pram.N_q:,:pram.N_q] = ((math.pi*rho/2)**0.5)*R[pram.N_q:,:pram.N_q]#R_mixed
+            # R2[:pram.N_q,pram.N_q:] = ((math.pi*rho/2)**0.5)*R[:pram.N_q,pram.N_q:]#R_mixed
+            # R2[pram.N_q:,pram.N_q:] = R[pram.N_q:,pram.N_q:] #R_analog
+            pred1 = esprit(pram, R)
+            # pred2 = music(pram, R2)
+            if pred1.shape == teta_vector1[i,:].shape:# and pred2.shape == teta_vector1[i,:].shape:
+                break
+        teta_vector1[i,:] = pred1
+        # print(teta_vector1[i,:])
+        # teta_vector2[i, :] = pred2
+    sub_vec1 = teta_vector1 - labels
+    # sub_vec2 = teta_vector2 - labels
+    RMSE1 = ((np.sum(np.sum(np.power(sub_vec1, 2), 1)) / (sub_vec1.shape[0] * (teta_vector1.shape[1]))) ** 0.5)
+    # RMSE2 = ((np.sum(np.sum(np.power(sub_vec2, 2), 1)) / (sub_vec2.shape[0] * (teta_vector2.shape[1]))) ** 0.5)
+    return RMSE1#, RMSE2 #TODO modulo
 
 def G_DOA2(pram,q): #TODO reduce complexity and sace performance
     labels = np.zeros((pram.monte, pram.D))
