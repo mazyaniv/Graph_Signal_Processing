@@ -36,28 +36,28 @@ if __name__ == "__main__":
     # plt.legend()
     # plt.show()
 ###############################################################
-    N_a = [0]
-    N_q = [20]
-    D = 2
-    teta_range = [0, 60]
-    # SNR = 0
-    SNR_space = np.linspace(0, 10, 1)#np.linspace(-10, 10, 16)
-    snap = 300
-    # snap_space = np.linspace(100, 1000, 10, dtype=int)
-    monte = 1
-    delta = 5 #Minimal gap between two determenijjstic angles
-    Res = 1
-    # delta_space = np.linspace(0.8, 6, 20)
-    relevant_space = SNR_space  # TODO
-    Error1 = np.zeros((len(relevant_space), len(N_q)))
-    Error2 = np.zeros((len(relevant_space), len(N_q)))
-    for i in range(len(relevant_space)):
-        for j in range(len(N_q)):
-            my_parameters = prameters_class(M=N_a[j] + N_q[j],N_q=N_q[j], SNR=SNR_space[i], K=snap, D=D,teta_range=teta_range, monte=monte,
-                                            delta=delta,Res=Res)
-            # Error1[i, j] = G_DOA(my_parameters)
-            Error2[i, j] = general(my_parameters)
-    print("RMSE=",Error2)
+    # N_a = [0]
+    # N_q = [20]
+    # D = 2
+    # teta_range = [0, 60]
+    # # SNR = 0
+    # SNR_space = np.linspace(0, 10, 1)#np.linspace(-10, 10, 16)
+    # snap = 300
+    # # snap_space = np.linspace(100, 1000, 10, dtype=int)
+    # monte = 1
+    # delta = 5 #Minimal gap between two determenijjstic angles
+    # Res = 1
+    # # delta_space = np.linspace(0.8, 6, 20)
+    # relevant_space = SNR_space  # TODO
+    # Error1 = np.zeros((len(relevant_space), len(N_q)))
+    # Error2 = np.zeros((len(relevant_space), len(N_q)))
+    # for i in range(len(relevant_space)):
+    #     for j in range(len(N_q)):
+    #         my_parameters = prameters_class(M=N_a[j] + N_q[j],N_q=N_q[j], SNR=SNR_space[i], K=snap, D=D,teta_range=teta_range, monte=monte,
+    #                                         delta=delta,Res=Res)
+    #         # Error1[i, j] = G_DOA(my_parameters)
+    #         Error2[i, j] = general(my_parameters)
+    # print("RMSE=",Error2)
     # np.save(f"RMSE for delta={my_parameters.delta}, Monte={my_parameters.monte}, Res={my_parameters.Res},Snap={my_parameters.K}.npy", Error1)
     # fig = plt.figure(figsize=(12, 8))
     # colors = ['black','blue', 'red']
