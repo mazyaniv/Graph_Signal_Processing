@@ -61,7 +61,9 @@ def observ(SNR, K, A): #k=snapshots
 
 def GFT(S, x):
     eigenvalues, eigenvectors = np.linalg.eig(S)
+    # print(np.sort(np.real(eigenvalues)))
     sorted_eigenvectors = eigenvectors[:, np.argsort(np.real(eigenvalues))] #sorted in case of negative eigenvalues
+    # print(sorted_eigenvectors.T.conjugate())
     x_tag = sorted_eigenvectors.T.conjugate()@x
     vector = np.zeros(len(x_tag), dtype=int)
     vector[:] = 1
@@ -142,14 +144,15 @@ def general(pram):
             # R2[pram.N_q:,:pram.N_q] = ((math.pi*rho/2)**0.5)*R[pram.N_q:,:pram.N_q]#R_mixed
             # R2[:pram.N_q,pram.N_q:] = ((math.pi*rho/2)**0.5)*R[:pram.N_q,pram.N_q:]#R_mixed
             # R2[pram.N_q:,pram.N_q:] = R[pram.N_q:,pram.N_q:] #R_analog
-            pred1 = esprit(pram, R)
+            pred1 = music(pram, R)
             # pred2 = music(pram, R2)
             if pred1.shape == teta_vector1[i,:].shape:# and pred2.shape == teta_vector1[i,:].shape:
                 break
         teta_vector1[i,:] = pred1
-        # print(teta_vector1[i,:])
         # teta_vector2[i, :] = pred2
     sub_vec1 = teta_vector1 - labels
+    print("labels=",labels)
+    print("pred1=",teta_vector1)
     # sub_vec2 = teta_vector2 - labels
     RMSE1 = ((np.sum(np.sum(np.power(sub_vec1, 2), 1)) / (sub_vec1.shape[0] * (teta_vector1.shape[1]))) ** 0.5)
     # RMSE2 = ((np.sum(np.sum(np.power(sub_vec2, 2), 1)) / (sub_vec2.shape[0] * (teta_vector2.shape[1]))) ** 0.5)
