@@ -40,10 +40,6 @@ def observ(SNR, K, A): #k=snapshots
     
     sample_rate = 1e9 #TODO
     t = np.arange(K) / sample_rate  # time vector
-    # if D ==1:
-    #     f_tone = np.array([700])
-    # else:
-    #     f_tone = np.array([50,100])#np.array([50,700])
     f_tone = sample_rate*np.ones(D)
     s = np.exp(1j*2*np.pi*f_tone.reshape(D,1)*t.reshape(1,K))
 
