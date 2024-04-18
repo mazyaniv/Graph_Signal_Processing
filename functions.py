@@ -21,7 +21,8 @@ import scipy.signal as ss
 
 def angles_generate(pram):
     while True:
-        range_array = np.arange(pram.teta_range[0], pram.teta_range[1], pram.Res)
+        range2 = [-30, 30]
+        range_array = np.arange(range2[0], range2[1], pram.Res)
         teta = np.random.choice(range_array[1:-1], size=pram.D, replace=False)
         if pram.D >1 and abs(teta[0] - teta[1]) > pram.delta:
             break
@@ -37,23 +38,24 @@ def observ(SNR, K, A): #k=snapshots
     N = A.shape[0]
     D = A.shape[1]
     
-    sample_rate = 1e6 #TODO
+    sample_rate = 1e9 #TODO
     t = np.arange(K) / sample_rate  # time vector
-    if D ==1:
-        f_tone = np.array([700])
-    else:
-        f_tone = np.array([50,700]) #same size as D
-    s = np.exp(2j * np.pi * f_tone.reshape(D,1) * t.reshape(1,K))
+    # if D ==1:
+    #     f_tone = np.array([700])
+    # else:
+    #     f_tone = np.array([50,100])#np.array([50,700])
+    f_tone = sample_rate*np.ones(D)
+    s = np.exp(1j*2*np.pi*f_tone.reshape(D,1)*t.reshape(1,K))
 
-    # real_s = np.random.normal(0, 1 / math.sqrt(2), (D, K))
-    # im_s = np.random.normal(0, 1 / math.sqrt(2), (D, K))
+    # real_s = np.random.normal(1, 1 / math.sqrt(2), (D, K))
+    # im_s = np.random.normal(1, 1 / math.sqrt(2), (D, K))
     # s = real_s + 1j * im_s
     
     # s = generate_qpsk_symbols(K,D)
 
     s_samp = s.reshape(D, K)
-    real_n = np.random.normal(0, (10 ** (-SNR / 20)) / math.sqrt(2), (N, K))
-    im_n = np.random.normal(0, (10 ** (-SNR / 20)) / math.sqrt(2), (N, K))
+    real_n = np.random.normal(0, math.sqrt((10 ** (-SNR / 20))) / math.sqrt(2), (N, K))
+    im_n = np.random.normal(0, math.sqrt((10 ** (-SNR / 20))) / math.sqrt(2), (N, K))
     n = real_n + 1j * im_n
     n_samp = n.reshape(N, K)
     x_a_samp = (A@s_samp) + n_samp
@@ -110,7 +112,7 @@ def G_DOA(pram):
         theta_vector[l,:] = pred*pram.Res+pram.teta_range[0]
         # print(ind)
         # ind += 1
-    # print(labels)
+    # print("labels:",labels)
     # print(theta_vector)
     sub_vec = theta_vector - labels
     RMSE = ((np.sum(np.sum(np.power(sub_vec, 2), 1)) / (sub_vec.shape[0] * (theta_vector.shape[1]))) ** 0.5)
@@ -151,8 +153,8 @@ def general(pram):
         teta_vector1[i,:] = pred1
         # teta_vector2[i, :] = pred2
     sub_vec1 = teta_vector1 - labels
-    print("labels=",labels)
-    print("pred1=",teta_vector1)
+    # print("labels=",labels)
+    # print("pred1=",teta_vector1)
     # sub_vec2 = teta_vector2 - labels
     RMSE1 = ((np.sum(np.sum(np.power(sub_vec1, 2), 1)) / (sub_vec1.shape[0] * (teta_vector1.shape[1]))) ** 0.5)
     # RMSE2 = ((np.sum(np.sum(np.power(sub_vec2, 2), 1)) / (sub_vec2.shape[0] * (teta_vector2.shape[1]))) ** 0.5)
@@ -197,7 +199,7 @@ def G_DOA2(pram,q): #TODO reduce complexity and sace performance
         # print(ind)
         ind += 1
     # print(labels)
-    print(theta_vector)
+    # print(theta_vector)
     sub_vec = theta_vector - labels
     RMSE = ((np.sum(np.sum(np.power(sub_vec, 2), 1)) / (sub_vec.shape[0] * (theta_vector.shape[1]))) ** 0.5)
     return RMSE

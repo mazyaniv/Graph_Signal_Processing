@@ -43,8 +43,8 @@ def music(pram,R):
     for idx, theta in enumerate(theta_range):
         steering_vector = np.exp(-1j * np.pi * np.arange(pram.M) * np.sin(theta))
         music_spectrum[idx] = 1 / np.linalg.norm(En.conj().T @ steering_vector)
-    plt.plot(np.degrees(theta_range), music_spectrum)
-    plt.show()
+    # plt.plot(np.degrees(theta_range), music_spectrum)
+    # plt.show()
 
     peaks, _ = ss.find_peaks(music_spectrum)
     peaks = list(peaks)
