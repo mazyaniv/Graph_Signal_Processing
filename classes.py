@@ -2,7 +2,7 @@ import numpy as np
 import math
 class prameters_class():
     def __init__(self, M,N_q,SNR,K,D,teta_range,monte=100,delta=5,Res=1):
-        self.M = M
+        self.M = M #M
         self.N_q = N_q
         self.SNR = SNR
         self.K = K

@@ -2,7 +2,6 @@ import numpy as np
 
 
 
-
 # obs_a = observ(my_parameters.SNR, my_parameters.K, steering_original)
 # x_vec = quantize(obs_a, 0)
 # Method 1:

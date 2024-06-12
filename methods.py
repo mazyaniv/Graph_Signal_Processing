@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import math
 import scipy.signal as ss
-def root_music(pram,R):
+def root_music(pram,R): # Root-MUSIC
     my_vec_coff = np.zeros((pram.M, 2 * pram.M - 1), dtype=complex)
     eigvals, eigvecs = np.linalg.eig(R)
     sorted_indices = np.argsort(eigvals.real)[::-1]  # Sort eigenvalues in descending order
