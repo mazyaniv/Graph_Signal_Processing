@@ -17,4 +17,4 @@ methodology is explored, leveraging a fully connected graph to
 emulate sensor connectivity. Simulation outcomes validate the
 efficacy of graph-based solutions, closely aligning with conven-
 tional approaches and highlighting their potential in resolving
-this pertinent issue
+this pertinent issue.
