@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 
 
 if __name__ == "__main__":
-    # my_parameters = prameters_class(M=20, N_q=20, SNR=-20, K=150, D=2, teta_range=[-100, 100],monte=1,delta=20,Res=1)
+    # my_parameters = prameters_class(M=20, N_q=0, SNR=20, K=500, D=2, teta_range=[-100, 100],monte=1,delta=20,Res=1)
     # print(G_DOA(my_parameters))
     # theta = [-30,45]
     # steering_original = Matrix_class(my_parameters).steering(theta)
@@ -36,19 +36,20 @@ if __name__ == "__main__":
     # plt.legend()
     # plt.show()
 ###############################################################
-    N_a = [20,0]
-    N_q = [0,20]
+    N_a = [20]
+    N_q = [0]
     D = 2
     teta_range = [-60, 60]
     # SNR = 0
-    SNR_space = np.linspace(-30, -20, 8)
-    snap = 150
+    SNR_space = np.linspace(-15, -5, 8)
+    snap = 155
     # snap_space = np.linspace(100, 1000, 10, dtype=int)
-    monte = 100
+    monte = 500
     delta = 20 #Minimal gap between two determenijjstic angles
-    Res = 0.125
+    Res = 1
     # delta_space = np.linspace(0.8, 6, 20)
     relevant_space = SNR_space  # TODO
+
     Error1 = np.zeros((len(relevant_space), len(N_q)))
     Error2 = np.zeros((len(relevant_space), len(N_q)))
     for i in range(len(relevant_space)):
@@ -56,25 +57,25 @@ if __name__ == "__main__":
             my_parameters = prameters_class(M=N_a[j] + N_q[j],N_q=N_q[j], SNR=SNR_space[i], K=snap, D=D,teta_range=teta_range, monte=monte,
                                             delta=delta,Res=Res)
             Error1[i, j] = G_DOA(my_parameters)
-            # Error2[i, j] = general(my_parameters)
-    # print("RMSE=",Error1)
-    # np.save(f"RMSE for delta={my_parameters.delta}, Monte={my_parameters.monte}, Res={my_parameters.Res},Snap={my_parameters.K}.npy", Error1)
+            Error2[i, j] = general(my_parameters)
+    print("RMSE=",Error1)
+    # np.save(f"RMSE for Monte={my_parameters.monte},Snap={my_parameters.K}.npy", Error1)
+    # Error1 = np.load(f"RMSE for Monte={monte},Snap={snap}.npy")
     fig = plt.figure(figsize=(12, 8))
     colors = ['black', 'red']
     for i in range(len(N_q)):  # TODO
-        plt.plot(relevant_space, Error1[:, i], linestyle='solid', marker=".", color=colors[i],
-                 label=f'N_a={N_a[i]},N_q={N_q[i]},GSP')
+        plt.plot(relevant_space[2:-2], Error1[2:-2, i], linestyle='solid', marker=".", color=colors[i])#,
+                 # label=f'N_a={N_a[i]},N_q={N_q[i]}')
         # plt.plot(relevant_space, Error2[:, i], linestyle='dashed', marker="x", color=colors[i],
         #          label=f'N_a={N_a[i]},N_q={N_q[i]},MUSIC')
     ax = plt.gca()
-    ax.set_xticks(np.arange(SNR_space[0], SNR_space[-1], 0.5), minor=True)
+    ax.set_xticks(np.arange(SNR_space[2], SNR_space[-2], 0.25), minor=True)
     ax.grid(which='major', alpha=0.5)
     ax.grid(which='minor', linestyle="--", alpha=0.25)
-    plt.title(f"RMSE for $Monte={my_parameters.monte}, "
-              f"Snap={my_parameters.K}, Res={my_parameters.Res}")  # TODO
+    plt.title(f"RMSE for {monte} simulations and {snap} snapshots")  # TODO
     plt.ylabel("RMSE")
     plt.xlabel(r"$SNR_{dB}$")
-    plt.legend(loc='upper right', fontsize='small', ncol=2)
+    plt.xlim(SNR_space[2], SNR_space[-3])
+    # plt.legend(loc='upper right', fontsize='small')
     plt.show()
-
 

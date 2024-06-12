@@ -5,6 +5,7 @@ from matplotlib import pyplot as plt
 from classes import prameters_class, Matrix_class
 from methods import root_music, music, esprit
 import scipy.signal as ss
+from scipy.ndimage import gaussian_filter
 
 # def get_key_by_value(dictionary, target_value):
 #     for key, value in dictionary.items():
@@ -21,7 +22,7 @@ import scipy.signal as ss
 
 def angles_generate(pram):
     while True:
-        range2 = [-30, 30]
+        range2 = [-30, 30] #TODO - note that the range is limited to [-30,30] for the sake of the simulation
         range_array = np.arange(range2[0], range2[1], pram.Res)
         teta = np.random.choice(range_array[1:-1], size=pram.D, replace=False)
         if pram.D >1 and abs(teta[0] - teta[1]) > pram.delta:
@@ -38,13 +39,14 @@ def observ(SNR, K, A): #k=snapshots
     N = A.shape[0]
     D = A.shape[1]
     
-    sample_rate = 1e9 #TODO
-    t = np.arange(K) / sample_rate  # time vector
-    f_tone = sample_rate*np.ones(D)
-    s = np.exp(1j*2*np.pi*f_tone.reshape(D,1)*t.reshape(1,K))
+    f_tone =1e9
+    f_tone_vec = f_tone*np.ones(D)
+    sample_rate = f_tone # nayquist rate
+    t = np.arange(K)/sample_rate  # time vector
+    s = np.exp(1j*2*np.pi*f_tone_vec.reshape(D,1)*t.reshape(1,K))
 
-    # real_s = np.random.normal(1, 1 / math.sqrt(2), (D, K))
-    # im_s = np.random.normal(1, 1 / math.sqrt(2), (D, K))
+    # real_s = np.random.normal(0, 1 / math.sqrt(2), (D, K))
+    # im_s = np.random.normal(0, 1 / math.sqrt(2), (D, K))
     # s = real_s + 1j * im_s
     
     # s = generate_qpsk_symbols(K,D)
@@ -83,7 +85,7 @@ def G_DOA(pram):
         teta = angles_generate(pram)
         # print(teta)
         labels[l, :] = teta
-        S = Matrix_class(pram).steering(teta)
+        S = (Matrix_class(pram)).steering(teta)
         theta_range = np.arange(pram.teta_range[0], pram.teta_range[1], pram.Res)
         obs_a = observ(pram.SNR, pram.K, S)
         x_vec = quantize(obs_a, pram.N_q)
@@ -95,7 +97,7 @@ def G_DOA(pram):
             x_tag_s = GFT(A_s, x_vec_s) #GFT(A_s_mat[:,:,idx], x_vec[:,i])
             sorted_indices = np.argsort(x_tag_s)[::-1]
             spectrum[idx]= 1/LA.norm(np.abs(np.delete(x_tag_s, sorted_indices[:1]))/np.max(np.abs(x_tag_s))) #TODO
-        # plt.title("Piquancy function for {D} source/s".format(D=pram.D))
+        # plt.title(f"Piquancy function for {pram.D} source/s, SNR={pram.SNR}")
         # plt.ylabel(r"$\xi(\theta)$")
         # plt.xlabel(r"$\theta^\degree$")
         # plt.plot(theta_range, spectrum)#,marker=".")
